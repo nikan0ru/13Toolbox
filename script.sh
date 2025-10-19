@@ -46,7 +46,7 @@ bluetooth_mangler()
 	printf "Removing Bluetooth Devices\n"
 	devices=$( bluetoothctl paired-devices )
 	paired_devices_count=$(echo "$devices" | grep -c "Device" )
-	IFS=$'\n' read -r -d '' -a devices_array <<< "$devices"
+	readarray -t devices_array <<< "$devices"
 	if [[ $paired_devices_count -eq 0 ]]; then
 		echo -e "$Yellow NO bluethooth device Paired , Exiting! $Black"
 		return;
@@ -60,7 +60,6 @@ bluetooth_mangler()
 	done
 	printf "\nDone :)\n"
 }
-
 
 display()
 {
@@ -145,7 +144,7 @@ main()
 		brightness "$2"
 	elif [[ $1 = '-s' ]]; then
 		spotify_fix
-	elif [[ "$1" -eq 0 ]]; then
+	elif [[ -z "$1" ]]; then
 		default_settings
 	else
 		return 1
