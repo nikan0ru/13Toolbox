@@ -1,0 +1,17 @@
+{
+  "FreshStart": true,
+  "FavoriteApps": {
+    "Spotify": "com.spotify.Client",
+    "Visual Studio Code": "com.visualstudio.code",
+    "Firefox": "org.mozilla.firefox"
+  },
+  "preferredSystemTheme": "light",
+  "NightTime": null,
+  "DayTime": null,
+  "IconType": "Win10Sur",
+  "Resolution": "2560x1440",
+  "bluetoothDevices": {
+    "Oraimo BoomPop N": "",
+    "Oraimo SpaceBuds N": "78:15:2D:97:1A:97"
+  }
+}
