@@ -1,13 +1,14 @@
 {
   "FreshStart": true,
+  "Browser":null,
   "FavoriteApps": {
     "Spotify": "com.spotify.Client",
-    "Visual Studio Code": "com.visualstudio.code",
-    "Firefox": "org.mozilla.firefox"
+    "Visual Studio Code": "com.visualstudio.code"
   },
   "preferredSystemTheme": "light",
   "NightTime": null,
   "DayTime": null,
+  "brightnessLVL":13,
   "IconType": "Win10Sur",
   "Resolution": "2560x1440",
   "bluetoothDevices": {
