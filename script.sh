@@ -26,15 +26,7 @@
 #                                                  #
 # *************************************************#
 
-
-Black='\033[0;30m'
-Red='\033[0;31m'
-Green='\033[0;32m'
-Yellow='\033[0;33m'
-Blue='\033[0;34m'
-Purple='\033[0;35m'
-Cyan='\033[0;36m'
-White='\033[0;37m'
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 bluetooth_mangler()
 {
@@ -43,112 +35,116 @@ bluetooth_mangler()
 	declare -a paired_devices;
 	declare -a devices_array;
 
-	printf "Removing Bluetooth Devices\n"
 	devices=$( bluetoothctl paired-devices )
 	paired_devices_count=$(echo "$devices" | grep -c "Device" )
-	readarray -t devices_array <<< "$devices"
+	IFS=$'\n' read -r -d '' -a devices_array <<< "$devices"
 	if [[ $paired_devices_count -eq 0 ]]; then
-		echo -e "$Yellow NO bluethooth device Paired , Exiting! $Black"
-		return;
+		printf "No bluetooth device Paired , Exiting!"
+		return 1;
 	fi;
+	printf "Removing Bluetooth Devices\n"
 	while [[ i -lt  $paired_devices_count ]] ;
 	do
 		device=$(echo "${devices_array[i]}" | awk ' {print $2}')
 		paired_devices+=("$device");
+		bluetoothctl untrust "${paired_devices[i]}";
+		bluetoothctl disconnect "${paired_devices[i]}";
 		bluetoothctl remove "${paired_devices[i]}";
 		((i++));
 	done
-	printf "\nDone :)\n"
+	return 0;
 }
 
-display()
+resolution()
 {
-	if [[ $1 -eq 0 ]]; then
-		RESOLUTION=2560x1440
+	local RESOLUTION;
+
+	if [[ -z "$1" ]]; then
+		RESOLUTION="2560x1440" # This will be used By default settings
 	else
 		RESOLUTION=$1
 	fi
-	ICON="Win10Sur"
 	xrandr -s "$RESOLUTION";
-	gsettings set org.gnome.desktop.interface icon-theme "$ICON";
-	echo -e "$Green Changed Resolution Successfully $Black";
-
+	printf  "Changed Resolution Successfully\n";
+	return 0;
 }
 
 brightness()
 {
+	local -i LVL
+
+	if [[ -z $1 ]];then
+		LVL=10
+	else
+		LVL=$1
+	fi
 	gdbus call --session --dest org.gnome.SettingsDaemon.Power --object-path /org/gnome/SettingsDaemon/Power \
-	--method org.freedesktop.DBus.Properties.Set org.gnome.SettingsDaemon.Power.Screen Brightness "<int32 $1>"
+	--method org.freedesktop.DBus.Properties.Set org.gnome.SettingsDaemon.Power.Screen Brightness "<int32 "$LVL">"
+	printf  "Changed Brightness Successfully\n";
+	return 0;
+
 }
 
 theme_switcher()
 {
-	night_time="20:15"
-	day_time="07:00"
-	current_time=$(date +"%H:%M")
-	if [[ "$current_time" > "$night_time" || "$current_time" < "$day_time" ]]; then
-		darkmode
-	elif [[ "$current_time" > "$day_time"  && "$current_time" < "$night_time" ]]; then
-		lightmode
+	if [[ "$1" == 'dark' || -z "$1" ]]; then
+		DARK_THEME="Adwaita-dark";
+		gsettings set org.gnome.desktop.interface gtk-theme $DARK_THEME
+		gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+		printf "Switched To Dark Theme ";
+	elif [[ "$1" == 'light' ]]; then
+		LIGHT_THEME="Adwaita";
+		gsettings set org.gnome.desktop.interface gtk-theme $LIGHT_THEME
+		gsettings set org.gnome.desktop.interface color-scheme prefer-light
+		printf "Switched To Light Theme ";
 	fi
-}
-lightmode()
-{
-	LIGHT_THEME="Adwaita";
-	echo "Setting Light Theme..."
-	gsettings set org.gnome.desktop.interface gtk-theme $LIGHT_THEME
-	gsettings set org.gnome.desktop.interface color-scheme prefer-light
-}
-darkmode()
-{
-	DARK_THEME="Adwaita";
-	echo "Setting Dark Theme..."
-	gsettings set org.gnome.desktop.interface gtk-theme $DARK_THEME
-	gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+	printf "Successfully\n";
+	return 0;
 }
 
 spotify_fix()
 {
 	rm -rf "$HOME/.var/app/com.spotify.Client"
-	flatpak override --user --nosocket=wayland com.spotify.Client
-	flatpak run com.spotify.Client
-	echo "eyyyy"
+	gnome-terminal -- bash -c flatpak override --user --nosocket=wayland com.spotify.Client
+	gnome-terminal -- bash -c "flatpak run com.spotify.Client"
+	return 0;
 }
 
 update_favourites()
 {
 	declare -a APPLICATIONS;
 
-	echo -e "$Blue No Args Given ! Using default settings $Black"
+	printf "No Args Given ! Using default settings"
 	APPLICATIONS=( org.mozilla.firefox com.spotify.Client com.visualstudio.code)  # Applications That will be Updated
 	flatpak update "${APPLICATIONS[@]}"  -y ;
 }
 
 default_settings()
 {
+	brightness
 	bluetooth_mangler
-	display
+	resolution
 	update_favourites
 }
+
 main()
 {
-	if [[ $1 = '-bth' ]]; then
+	printf "13Toolbox: "
+	if [[ $1 = '-bt' ]]; then
 		bluetooth_mangler
 	elif [[ $1 = '-t' ]]; then
-		theme_switcher
+		theme_switcher $2
 	elif [[ $1 = '-u' ]]; then
 		update_favourites
-	elif [[ $1 = '-d' ]]; then
+	elif [[ $1 = '-r' ]]; then
 		display $2
 	elif [[ $1 = '-b' ]]; then
-		brightness "$2"
+		brightness $2
 	elif [[ $1 = '-s' ]]; then
 		spotify_fix
 	elif [[ -z "$1" ]]; then
 		default_settings
-	else
-		return 1
 	fi
 }
 
-main "$1" "$2"
+main "$1" $2

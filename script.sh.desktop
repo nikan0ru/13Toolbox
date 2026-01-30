@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Exec=gnome-terminal -- /bin/bash -c $HOME/13Toolbox/script.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name[en_US]=13Toolbox
+Name=13Toolbox
+Comment[en_US]=
+Comment=
