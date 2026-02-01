@@ -39,5 +39,4 @@ source ~/.zshrc
 
 ### To run script on startup run copy ```script.sh.desktop``` to ```$HOME/.config/autostart```
 ```bash
-cp $HOME/13Toolbox/script.sh.desktop;
- $HOME/.config/autostart;```.
+cp $HOME/13Toolbox/script.sh.desktop $HOME/.config/autostart;```.
