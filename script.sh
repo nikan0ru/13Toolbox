@@ -35,11 +35,12 @@ bluetooth_mangler()
 	declare -a paired_devices;
 	declare -a devices_array;
 
+	bluetoothctl power on;
 	devices=$( bluetoothctl paired-devices )
 	paired_devices_count=$(echo "$devices" | grep -c "Device" )
 	IFS=$'\n' read -r -d '' -a devices_array <<< "$devices"
 	if [[ $paired_devices_count -eq 0 ]]; then
-		printf "No bluetooth device Paired , Exiting!"
+		printf "No bluetooth device Paired , Exiting!\n"
 		return 1;
 	fi;
 	printf "Removing Bluetooth Devices\n"
@@ -104,6 +105,7 @@ theme_switcher()
 
 spotify_fix()
 {
+	printf "Spotify Reset\n"
 	rm -rf "$HOME/.var/app/com.spotify.Client"
 	gnome-terminal -- bash -c flatpak override --user --nosocket=wayland com.spotify.Client
 	gnome-terminal -- bash -c "flatpak run com.spotify.Client"
@@ -114,13 +116,14 @@ update_favourites()
 {
 	declare -a APPLICATIONS;
 
-	printf "No Args Given ! Using default settings"
-	APPLICATIONS=( org.mozilla.firefox com.spotify.Client com.visualstudio.code)  # Applications That will be Updated
+	flatpak install com.spotify.Client;
+	APPLICATIONS=( org.mozilla.firefox com.spotify.Client)  # Applications That will be Updated
 	flatpak update "${APPLICATIONS[@]}"  -y ;
 }
 
 default_settings()
 {
+	printf "No Args Given ! Using default settings"
 	brightness
 	bluetooth_mangler
 	resolution
