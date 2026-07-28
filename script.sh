@@ -116,15 +116,21 @@ update_favourites()
 {
 	declare -a APPLICATIONS;
 
-	flatpak install com.spotify.Client;
-	APPLICATIONS=( org.mozilla.firefox com.spotify.Client)  # Applications That will be Updated
+	APPLICATIONS=( org.mozilla.firefox )  # Applications That will be Updated
+	flatpak install "${APPLICATIONS[@]}"  -y ;
 	flatpak update "${APPLICATIONS[@]}"  -y ;
+}
+
+mute_sound()
+{
+	amixer -D pulse sset Master 0%
 }
 
 default_settings()
 {
-	printf "No Args Given ! Using default settings"
+	printf "No Args Given ! Using default settings\n"
 	brightness
+	mute_sound
 	bluetooth_mangler
 	resolution
 	update_favourites
