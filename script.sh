@@ -59,7 +59,14 @@ bluetooth_mangler()
 resolution()
 {
 	local RESOLUTION;
+	local cluster;
 
+	cluster=$(hostname)
+	cluster=${cluster:0:2};
+	if [[ ${cluster[1]} -eq "e2" ]];then
+		printf  "Can't change resolution Incompatible cluster\n";
+		return 0;
+	fi
 	if [[ -z "$1" ]]; then
 		RESOLUTION="2560x1440" # This will be used By default settings
 	else
@@ -75,12 +82,12 @@ brightness()
 	local -i LVL
 
 	if [[ -z $1 ]];then
-		LVL=10
+		LVL=50
 	else
 		LVL=$1
 	fi
 	gdbus call --session --dest org.gnome.SettingsDaemon.Power --object-path /org/gnome/SettingsDaemon/Power \
-	--method org.freedesktop.DBus.Properties.Set org.gnome.SettingsDaemon.Power.Screen Brightness "<int32 "$LVL">"
+	--method org.freedesktop.DBus.Properties.Set org.gnome.SettingsDaemon.Power.Screen Brightness "<int32 "$LVL">"  > /dev/null
 	printf  "Changed Brightness Successfully\n";
 	return 0;
 
@@ -108,7 +115,7 @@ spotify_fix()
 	printf "Spotify Reset\n"
 	rm -rf "$HOME/.var/app/com.spotify.Client"
 	gnome-terminal -- bash -c flatpak override --user --nosocket=wayland com.spotify.Client
-	gnome-terminal -- bash -c "flatpak run com.spotify.Client"
+	flatpak run com.spotify.Client --audio-api=pulseaudio
 	return 0;
 }
 
@@ -116,14 +123,15 @@ update_favourites()
 {
 	declare -a APPLICATIONS;
 
-	APPLICATIONS=( org.mozilla.firefox )  # Applications That will be Updated
+	APPLICATIONS=( org.mozilla.firefox com.spotify.Client)  # Applications That will be Updated
 	flatpak install "${APPLICATIONS[@]}"  -y ;
 	flatpak update "${APPLICATIONS[@]}"  -y ;
 }
 
 mute_sound()
 {
-	amixer -D pulse sset Master 0%
+	amixer -D pulse sset Master 0%  > /dev/null
+	printf "Sound set to 0%\n"
 }
 
 default_settings()
@@ -146,7 +154,7 @@ main()
 	elif [[ $1 = '-u' ]]; then
 		update_favourites
 	elif [[ $1 = '-r' ]]; then
-		display $2
+		resolution $2
 	elif [[ $1 = '-b' ]]; then
 		brightness $2
 	elif [[ $1 = '-s' ]]; then
