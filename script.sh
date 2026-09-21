@@ -63,7 +63,7 @@ resolution()
 
 	cluster=$(hostname)
 	cluster=${cluster:0:2};
-	if [[ ${cluster[1]} -eq "e2" ]];then
+	if [[ cluster == "e3" ]];then
 		printf  "Can't change resolution Incompatible cluster\n";
 		return 0;
 	fi
